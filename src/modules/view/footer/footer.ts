@@ -2,22 +2,21 @@ import Element from "../../node";
 import "./footer.scss";
 
 export default class Footer {
-  createElement;
+  elementView;
   constructor() {
-    this.createElement = this.elementView();
+    this.elementView = this.createElement();
   }
 
-  private elementView() {
+  private createElement() {
     const footer = {
       tagName: "footer",
       classNames: ["footer"],
       textContent: "Made by noisekov",
     };
-    const createFooter = new Element(footer);
-
-    return createFooter;
+    return new Element(footer);
   }
+
   public getHtmlEl(): HTMLElement {
-    return this.createElement.getNode();
+    return this.elementView.getNode();
   }
 }

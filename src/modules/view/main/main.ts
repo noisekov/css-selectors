@@ -7,7 +7,7 @@ import Popup from "../popup/popup";
 import Enter from "../enter/enter";
 
 export default class Main implements IObserver {
-  createElement;
+  elementView;
   codeEl: HTMLElement | null;
   desk: HTMLElement | null;
   levelNow: number | null;
@@ -27,15 +27,15 @@ export default class Main implements IObserver {
     this.bthHelp = null;
     this.bthReset = null;
     this.levelBlock = null;
-    this.createElement = this.elementView();
+    this.elementView = this.createElement();
     this.codeEl = null;
     this.desk = null;
-    this.event();
-    this.enterKeyCheck();
+    this.addEvent();
+    this.addEnterKeyCheck();
     this.aside = null;
-    this.eventBthHelp();
-    this.eventBthReset();
-    this.eventLevelsBtn();
+    this.addEventBthHelp();
+    this.addEventBthReset();
+    this.addEventLevelsBtn();
   }
 
   private checkLocalStorageLvl() {
@@ -47,7 +47,7 @@ export default class Main implements IObserver {
     }
   }
 
-  private eventLevelsBtn() {
+  private addEventLevelsBtn() {
     const changeLevelbtn = (evt: Event) => {
       if (evt.target) {
         this.levelNow = +(evt.target as HTMLElement).innerText;
@@ -59,7 +59,7 @@ export default class Main implements IObserver {
     this.levelBlock?.addEventListener("click", changeLevelbtn.bind(this));
   }
 
-  private eventBthHelp() {
+  private addEventBthHelp() {
     const inputCheck = () => {
       const input: HTMLInputElement | null = document.querySelector(".input");
       if (input) {
@@ -88,7 +88,7 @@ export default class Main implements IObserver {
     this.bthHelp?.addEventListener("click", inputCheck.bind(this));
   }
 
-  private eventBthReset() {
+  private addEventBthReset() {
     const resetProgress = () => {
       this.levelNow = 1;
       this.saveLvl();
@@ -101,7 +101,7 @@ export default class Main implements IObserver {
     this.bthReset?.addEventListener("click", resetProgress.bind(this));
   }
 
-  private elementView() {
+  private createElement() {
     const main = {
       tagName: "main",
       classNames: ["main"],
@@ -127,85 +127,14 @@ export default class Main implements IObserver {
     const levelsBlock = new Element(asideLevels);
     this.levelBlock = levelsBlock.getNode();
 
-    const asideLevelsInner1 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "1",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner1);
-
-    const asideLevelsInner2 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "2",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner2);
-
-    const asideLevelsInner3 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "3",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner3);
-
-    const asideLevelsInner4 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "4",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner4);
-
-    const asideLevelsInner5 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "5",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner5);
-
-    const asideLevelsInner6 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "6",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner6);
-
-    const asideLevelsInner7 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "7",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner7);
-
-    const asideLevelsInner8 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "8",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner8);
-
-    const asideLevelsInner9 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "9",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner9);
-
-    const asideLevelsInner10 = {
-      tagName: "button",
-      classNames: ["aside__levels-btn"],
-      textContent: "10",
-      parentNode: levelsBlock.getNode(),
-    };
-    new Element(asideLevelsInner10);
+    for (let i = 1; i <= this.levelMax; i++) {
+      new Element({
+        tagName: "button",
+        classNames: ["aside__levels-btn"],
+        textContent: `${i}`,
+        parentNode: levelsBlock.getNode(),
+      });
+    }
 
     const mainBtnReset = {
       tagName: "button",
@@ -350,52 +279,55 @@ export default class Main implements IObserver {
     return createNode;
   }
 
-  private enterKeyCheck() {
+  private isAnswerRight() {
+    if (this.isLevelPass) {
+      if (this.levelNow) {
+        if (this.levelNow <= this.levelMax) {
+          this.levelNow += 1;
+        } else {
+          this.levelNow = null;
+        }
+      }
+      this.isLevelPass = false;
+      const rightElements: NodeListOf<HTMLElement> | null =
+        document.querySelectorAll(".right");
+      rightElements.forEach((rightEl) => {
+        rightEl.classList.add("right-answer");
+      });
+      const input: HTMLInputElement | null = document.querySelector(".input");
+      if (input) {
+        input.value = "";
+      }
+      setTimeout(() => {
+        this.saveLvl();
+        this.changeLevel();
+      }, 500);
+    } else {
+      const mainEditor: HTMLDivElement | null =
+        document.querySelector(".main__editor");
+      const mainCode: HTMLDivElement | null =
+        document.querySelector(".main__code");
+      if (mainEditor && mainCode) {
+        mainEditor.classList.add("false-answer");
+        mainCode.classList.add("false-answer");
+        setTimeout(() => {
+          mainEditor.classList.remove("false-answer");
+          mainCode.classList.remove("false-answer");
+        }, 500);
+      }
+    }
+  }
+
+  private addEnterKeyCheck() {
     const checkEnter = (evt: KeyboardEvent) => {
       if (evt.key === "Enter") {
-        if (this.isLevelPass) {
-          if (this.levelNow) {
-            if (this.levelNow <= this.levelMax) {
-              this.levelNow += 1;
-            } else {
-              this.levelNow = null;
-            }
-          }
-          this.isLevelPass = false;
-          const rightElements: NodeListOf<HTMLElement> | null =
-            document.querySelectorAll(".right");
-          rightElements.forEach((rightEl) => {
-            rightEl.classList.add("right-answer");
-          });
-          const input: HTMLInputElement | null =
-            document.querySelector(".input");
-          if (input) {
-            input.value = "";
-          }
-          setTimeout(() => {
-            this.saveLvl();
-            this.changeLevel();
-          }, 500);
-        } else {
-          const mainEditor: HTMLDivElement | null =
-            document.querySelector(".main__editor");
-          const mainCode: HTMLDivElement | null =
-            document.querySelector(".main__code");
-          if (mainEditor && mainCode) {
-            mainEditor.classList.add("false-answer");
-            mainCode.classList.add("false-answer");
-            setTimeout(() => {
-              mainEditor.classList.remove("false-answer");
-              mainCode.classList.remove("false-answer");
-            }, 500);
-          }
-        }
+        this.isAnswerRight();
       }
     };
     document.addEventListener("keypress", checkEnter.bind(this));
   }
 
-  private event() {
+  private addEvent() {
     const mouseChoose = (evt: Event) => {
       if (evt.target) {
         [...(evt.target as HTMLElement).classList].filter((x) => {
@@ -534,43 +466,7 @@ export default class Main implements IObserver {
         setTimeout(() => {
           (evt.target as HTMLElement).classList.remove("button--click");
         }, 100);
-        if (this.isLevelPass) {
-          if (this.levelNow) {
-            if (this.levelNow <= this.levelMax) {
-              this.levelNow += 1;
-            } else {
-              this.levelNow = null;
-            }
-          }
-          this.isLevelPass = false;
-          const rightElements: NodeListOf<HTMLElement> | null =
-            document.querySelectorAll(".right");
-          rightElements.forEach((rightEl) => {
-            rightEl.classList.add("right-answer");
-          });
-          const input: HTMLInputElement | null =
-            document.querySelector(".input");
-          if (input) {
-            input.value = "";
-          }
-          setTimeout(() => {
-            this.saveLvl();
-            this.changeLevel();
-          }, 500);
-        } else {
-          const mainEditor: HTMLDivElement | null =
-            document.querySelector(".main__editor");
-          const mainCode: HTMLDivElement | null =
-            document.querySelector(".main__code");
-          if (mainEditor && mainCode) {
-            mainEditor.classList.add("false-answer");
-            mainCode.classList.add("false-answer");
-            setTimeout(() => {
-              mainEditor.classList.remove("false-answer");
-              mainCode.classList.remove("false-answer");
-            }, 500);
-          }
-        }
+        this.isAnswerRight();
       }
     };
 
@@ -630,11 +526,7 @@ export default class Main implements IObserver {
 
   public update(...args: unknown[]): void {
     if (this.levelNow) {
-      if (args[0] === allLevel[this.levelNow].check) {
-        this.isLevelPass = true;
-      } else {
-        this.isLevelPass = false;
-      }
+      this.isLevelPass = args[0] === allLevel[this.levelNow].check;
     }
   }
 
@@ -675,6 +567,6 @@ export default class Main implements IObserver {
   }
 
   public getHtmlEl(): HTMLElement {
-    return this.createElement.getNode();
+    return this.elementView.getNode();
   }
 }

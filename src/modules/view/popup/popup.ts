@@ -2,13 +2,13 @@ import "./popup.scss";
 import Element from "../../node";
 
 export default class Popup {
-  createElement;
+  elementView;
   constructor() {
-    this.createElement = this.elementView();
-    this.event();
+    this.elementView = this.createElement();
+    this.addEvent();
   }
 
-  private elementView() {
+  private createElement() {
     const popupWrapper = {
       tagName: "div",
       classNames: ["popup-wrapper"],
@@ -32,7 +32,7 @@ export default class Popup {
     return createWrapper;
   }
 
-  private event() {
+  private addEvent() {
     document.addEventListener("click", this.closePopup.bind(this));
   }
 
@@ -41,6 +41,6 @@ export default class Popup {
   }
 
   public getHtmlEl(): HTMLElement {
-    return this.createElement.getNode();
+    return this.elementView.getNode();
   }
 }
